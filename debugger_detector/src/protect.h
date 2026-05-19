@@ -10,9 +10,9 @@
 #include <TlHelp32.h>
 #include <tchar.h>
 
-#include "VMProtectSDK.h"
-#include "xorstr.h"
-#include "color.h"
+#include "vendor/vmprotect/VMProtectSDK.h"
+#include "third_party/xorstr.h"
+#include "third_party/color.h"
 
 using namespace std;
 
