@@ -25,9 +25,6 @@ detector is a separate, self-contained check.
 
 ![Debugger detected output](assets/demo.png)
 
-
-## Why this exists
-
 I came across some anti-debugger projects online and wanted to actually
 understand how the techniques work not just copy them. So I rewrote
 them from scratch, restructured the code, and removed the parts I
