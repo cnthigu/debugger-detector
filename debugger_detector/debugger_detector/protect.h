@@ -17,6 +17,7 @@ namespace detector
     bool enable_window_scan = true;
     bool enable_verbose_log = true;
     bool enable_process_scan = true;
+    bool enable_driver_scan = true;
 
     void on_debugger_detected(const string& name)
     {
@@ -188,12 +189,45 @@ namespace detector
         }
     }
 
+    const vector<wstring> suspicious_devices = {
+       L"\\\\.\\Dumper",
+       L"\\\\.\\KsDumper",
+    };
+
+    void check_suspicious_drivers()
+    {
+
+        if (!enable_driver_scan)
+            return;
+
+        for (const auto& device : suspicious_devices)
+        {
+            HANDLE hFile = CreateFileW(
+                device.c_str(),
+                GENERIC_READ,
+                FILE_SHARE_READ,
+                NULL,
+                OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL,
+                NULL);
+
+            if (hFile != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(hFile);
+                on_debugger_detected("kernel driver detected");
+                return;
+            }
+        }
+    }
+
     void run_detection_loop()
     {
         while (true)
         {
             check_suspicious_processes();
             check_suspicious_windows();
+            check_suspicious_drivers();
+
             SleepEx(scan_detection_time, TRUE);
         }
     }

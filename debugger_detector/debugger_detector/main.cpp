@@ -5,6 +5,8 @@ int main()
     detector::enable_window_scan = true;
     detector::enable_verbose_log = true;
     detector::enable_process_scan = true;
+    detector::enable_driver_scan = true;
+
 
     detector::start_protection();
 
