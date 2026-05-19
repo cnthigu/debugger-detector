@@ -32,5 +32,8 @@
     <ClInclude Include="xorstr.h">
       <Filter>includes</Filter>
     </ClInclude>
+    <ClInclude Include="color.h">
+      <Filter>includes</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -126,6 +126,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="color.h" />
     <ClInclude Include="protect.h" />
     <ClInclude Include="VMProtectSDK.h" />
     <ClInclude Include="xorstr.h" />

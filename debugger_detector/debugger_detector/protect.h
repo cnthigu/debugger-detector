@@ -12,6 +12,7 @@
 
 #include "VMProtectSDK.h"
 #include "xorstr.h"
+#include "color.h"
 
 using namespace std;
 
@@ -31,10 +32,10 @@ namespace detector
 
         if (enable_verbose_log)
         {
-            cout << "========================================" << endl;
-            cout << "Debugger detected!" << endl;
-            cout << "Debugger Name: " << name << endl;
-            cout << "========================================" << endl;
+            std::cout << termcolor::white << XorStr("=====================================").c_str() << std::endl;
+            std::cout << termcolor::green << XorStr(" Debugger detected!").c_str() << std::endl;
+            std::cout << termcolor::red << XorStr(" Debugger Name: ").c_str() << termcolor::cyan << name << std::endl;
+            std::cout << termcolor::white << XorStr("=====================================").c_str() << std::endl;
 
             Sleep(3000);
         }
