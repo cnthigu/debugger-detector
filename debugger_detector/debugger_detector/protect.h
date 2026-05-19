@@ -341,8 +341,24 @@ namespace detector
         return FALSE;
     }
 
+    void erase_pe_header()
+    {
+        char* base = reinterpret_cast<char*>(GetModuleHandle(NULL));
+        if (!base)
+            return;
+
+        DWORD oldProtect = 0;
+        if (VirtualProtect(base, 4096, PAGE_READWRITE, &oldProtect))
+        {
+            ZeroMemory(base, 4096);
+            VirtualProtect(base, 4096, oldProtect, &oldProtect);
+        }
+    }
+
     void run_detection_loop()
     {
+        erase_pe_header();
+
         while (true)
         {
             check_suspicious_processes();
