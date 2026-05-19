@@ -5,11 +5,16 @@
 #include <windows.h>
 #include <TlHelp32.h>
 #include <tchar.h>
+#include <thread>
+#include <chrono>
+#include <cstdint>
 
 using namespace std;
 
 namespace detector
 {
+    int  scan_detection_time = 1000;
+    bool enable_window_scan = true;
     bool enable_verbose_log = true;
     bool enable_process_scan = true;
 
@@ -121,5 +126,80 @@ namespace detector
                 return;
             }
         }
+    }
+
+    const vector<pair<string, string>> suspicious_titles = {
+        // IDA
+        { "IDA: Quick start",     "IDA" },
+
+        // Cheat Engine (multiple versions)
+        { "Memory Viewer",        "Cheat Engine" },
+        { "Cheat Engine",         "Cheat Engine" },
+        { "Cheat Engine 7.0",     "Cheat Engine" },
+        { "Cheat Engine 7.1",     "Cheat Engine" },
+        { "Cheat Engine 7.2",     "Cheat Engine" },
+        { "Cheat Engine 7.3",     "Cheat Engine" },
+        { "Cheat Engine 7.4",     "Cheat Engine" },
+        { "Process List",         "Cheat Engine" },
+
+        // Debuggers
+        { "x32DBG",               "x32dbg" },
+        { "x64DBG",               "x64dbg" },
+        { "OllyDbg",              "OllyDbg" },
+
+        // Dumpers
+        { "KsDumper",             "KsDumper" },
+        { "Scylla x86 v0.9.5",    "Scylla x86" },
+        { "Scylla x86 v0.9.5a",   "Scylla x86" },
+        { "Scylla x86 v0.9.8",    "Scylla x86" },
+        { "Scylla x64 v0.9.5",    "Scylla x64" },
+        { "Scylla x64 v0.9.5a",   "Scylla x64" },
+        { "Scylla x64 v0.9.8",    "Scylla x64" },
+
+        // Network analyzers
+        { "Fiddler Everywhere",   "Fiddler Everywhere" },
+        { "Fiddler Classic",      "Fiddler Classic" },
+        { "Fiddler Jam",          "Fiddler Jam" },
+        { "FiddlerCap",           "FiddlerCap" },
+        { "FiddlerCore",          "FiddlerCore" },
+
+        // Other tools
+        { "Detect It Easy v3.01", "Detect It Easy" },
+        { "Everything",           "Everything" },
+        { "HxD",                  "HxD" },
+        { "Snowman",              "Snowman" },
+    };
+
+    void check_suspicious_windows()
+    {
+        if (!enable_window_scan)
+            return;
+
+        for (const auto& entry : suspicious_titles)
+        {
+            const string& title = entry.first;
+            const string& friendly_name = entry.second;
+
+            if (FindWindowA(NULL, title.c_str()))
+            {
+                on_debugger_detected(friendly_name);
+                return;
+            }
+        }
+    }
+
+    void run_detection_loop()
+    {
+        while (true)
+        {
+            check_suspicious_processes();
+            check_suspicious_windows();
+            SleepEx(scan_detection_time, TRUE);
+        }
+    }
+
+    void start_protection()
+    {
+        thread(run_detection_loop).detach();
     }
 }
