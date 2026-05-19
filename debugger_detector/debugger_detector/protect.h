@@ -2,12 +2,16 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <windows.h>
-#include <TlHelp32.h>
-#include <tchar.h>
 #include <thread>
 #include <chrono>
 #include <cstdint>
+
+#include <windows.h>
+#include <TlHelp32.h>
+#include <tchar.h>
+
+#include "VMProtectSDK.h"
+#include "xorstr.h"
 
 using namespace std;
 
@@ -23,6 +27,8 @@ namespace detector
 
     void on_debugger_detected(const string& name)
     {
+        VMProtectBeginUltra("on_debugger_detected");
+
         if (enable_verbose_log)
         {
             cout << "========================================" << endl;
@@ -34,6 +40,7 @@ namespace detector
         }
 
         exit(0);
+        VMProtectEnd();
     }
 
     void check_is_debugger_present()
@@ -198,6 +205,7 @@ namespace detector
 
     void check_suspicious_drivers()
     {
+        VMProtectBeginUltra("check_suspicious_drivers");
 
         if (!enable_driver_scan)
             return;
@@ -220,6 +228,8 @@ namespace detector
                 return;
             }
         }
+
+        VMProtectEnd();
     }
 
     FARPROC get_ntdll_function(const char* function_name)
@@ -236,7 +246,7 @@ namespace detector
 
     BOOL check_process_debug_flags()
     {
-
+        VMProtectBeginUltra("check_process_debug_flags");
         using pNtQueryInformationProcess = NTSTATUS(WINAPI*)(HANDLE, UINT, PVOID, ULONG, PULONG);
 
         auto NtQueryInfo = reinterpret_cast<pNtQueryInformationProcess>(
@@ -267,12 +277,13 @@ namespace detector
             return TRUE;
         }
 
+        VMProtectEnd();
         return FALSE;
     }
 
     BOOL check_kernel_debugger()
     {
-
+        VMProtectBeginUltra("check_kernel_debugger");
         struct SYSTEM_KERNEL_DEBUGGER_INFORMATION
         {
             BOOLEAN DebuggerEnabled;
@@ -307,12 +318,13 @@ namespace detector
             on_debugger_detected("SystemKernelDebuggerInformation");
             return TRUE;
         }
-
+        VMProtectEnd();
         return FALSE;
     }
 
     BOOL check_thread_hide()
     {
+        VMProtectBeginUltra("check_thread_hide");
 
         using pNtSetInformationThread = NTSTATUS(WINAPI*)(HANDLE, UINT, PVOID, ULONG);
 
@@ -338,11 +350,13 @@ namespace detector
             return TRUE;
         }
 
+        VMProtectEnd();
         return FALSE;
     }
 
     void erase_pe_header()
     {
+        VMProtectBeginUltra("erase_pe_header");
         char* base = reinterpret_cast<char*>(GetModuleHandle(NULL));
         if (!base)
             return;
@@ -353,6 +367,7 @@ namespace detector
             ZeroMemory(base, 4096);
             VirtualProtect(base, 4096, oldProtect, &oldProtect);
         }
+        VMProtectEnd();
     }
 
     void run_detection_loop()
