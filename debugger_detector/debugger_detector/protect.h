@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+
 namespace detector
 {
     int  scan_detection_time = 1000;
@@ -220,6 +222,125 @@ namespace detector
         }
     }
 
+    FARPROC get_ntdll_function(const char* function_name)
+    {
+        static HMODULE hNtDll = LoadLibrary(TEXT("ntdll.dll"));
+
+        if (!hNtDll)
+        {
+            return NULL;
+        }
+
+        return GetProcAddress(hNtDll, function_name);
+    }
+
+    BOOL check_process_debug_flags()
+    {
+
+        using pNtQueryInformationProcess = NTSTATUS(WINAPI*)(HANDLE, UINT, PVOID, ULONG, PULONG);
+
+        auto NtQueryInfo = reinterpret_cast<pNtQueryInformationProcess>(
+            get_ntdll_function("NtQueryInformationProcess")
+            );
+
+        if (!NtQueryInfo)
+            return FALSE;
+
+        const int ProcessDebugFlags = 0x1F;
+
+        DWORD NoDebugInherit = 0;
+
+        NTSTATUS status = NtQueryInfo(
+            GetCurrentProcess(),
+            ProcessDebugFlags,
+            &NoDebugInherit,
+            sizeof(DWORD),
+            NULL
+        );
+
+        if (status != STATUS_SUCCESS)
+            return FALSE;
+
+        if (NoDebugInherit == FALSE)
+        {
+            on_debugger_detected("ProcessDebugFlags");
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
+    BOOL check_kernel_debugger()
+    {
+
+        struct SYSTEM_KERNEL_DEBUGGER_INFORMATION
+        {
+            BOOLEAN DebuggerEnabled;
+            BOOLEAN DebuggerNotPresent;
+        };
+
+        enum { SystemKernelDebuggerInformationClass = 35 };
+
+        using pZwQuerySystemInformation = NTSTATUS(WINAPI*)(int, PVOID, ULONG, PULONG);
+
+        auto ZwQuerySysInfo = reinterpret_cast<pZwQuerySystemInformation>(
+            get_ntdll_function("ZwQuerySystemInformation")
+            );
+
+        if (!ZwQuerySysInfo)
+            return FALSE;
+
+        SYSTEM_KERNEL_DEBUGGER_INFORMATION info{};
+
+        NTSTATUS status = ZwQuerySysInfo(
+            SystemKernelDebuggerInformationClass,
+            &info,
+            sizeof(info),
+            NULL
+        );
+
+        if (status != STATUS_SUCCESS)
+            return FALSE;
+
+        if (info.DebuggerEnabled && !info.DebuggerNotPresent)
+        {
+            on_debugger_detected("SystemKernelDebuggerInformation");
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
+    BOOL check_thread_hide()
+    {
+
+        using pNtSetInformationThread = NTSTATUS(WINAPI*)(HANDLE, UINT, PVOID, ULONG);
+
+        auto NtSetInfoThread = reinterpret_cast<pNtSetInformationThread>(
+            get_ntdll_function("NtSetInformationThread")
+            );
+
+        if (!NtSetInfoThread)
+            return FALSE;
+
+        const int ThreadHideFromDebuggerClass = 0x11;
+
+        NTSTATUS status = NtSetInfoThread(
+            GetCurrentThread(),
+            ThreadHideFromDebuggerClass,
+            NULL,
+            0
+        );
+
+        if (status != STATUS_SUCCESS)
+        {
+            on_debugger_detected("ThreadHideFromDebugger");
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
     void run_detection_loop()
     {
         while (true)
@@ -227,6 +348,9 @@ namespace detector
             check_suspicious_processes();
             check_suspicious_windows();
             check_suspicious_drivers();
+            check_process_debug_flags();
+            check_kernel_debugger();
+            check_thread_hide();
 
             SleepEx(scan_detection_time, TRUE);
         }

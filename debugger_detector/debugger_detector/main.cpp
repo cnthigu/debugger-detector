@@ -7,7 +7,6 @@ int main()
     detector::enable_process_scan = true;
     detector::enable_driver_scan = true;
 
-
     detector::start_protection();
 
     detector::check_is_debugger_present();
