@@ -16,24 +16,36 @@
     <Filter Include="includes">
       <UniqueIdentifier>{ada89ad5-964e-4cfa-b80e-ac155a79a65d}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Arquivos de Recurso</Filter>
-    </ClCompile>
+    <Filter Include="src">
+      <UniqueIdentifier>{2766d756-f4ce-4e2d-9d15-f3bd429bb452}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{766d18bc-2dce-4e3a-9228-b9fa85037d61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor">
+      <UniqueIdentifier>{8670dbfb-e595-4e72-b6d0-885a45af2529}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\vmprotect">
+      <UniqueIdentifier>{42595bd0-9062-4e38-83fa-ffeaa54fa6ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="protect.h">
-      <Filter>includes</Filter>
-    </ClInclude>
-    <ClInclude Include="VMProtectSDK.h">
-      <Filter>includes</Filter>
-    </ClInclude>
-    <ClInclude Include="xorstr.h">
-      <Filter>includes</Filter>
+      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="color.h">
-      <Filter>includes</Filter>
+      <Filter>third_party</Filter>
     </ClInclude>
+    <ClInclude Include="xorstr.h">
+      <Filter>third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="VMProtectSDK.h">
+      <Filter>vendor\vmprotect</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
