@@ -31,4 +31,18 @@ namespace detector
             on_debugger_detected("IsDebuggerPresent");
         }
     }
+
+    void check_debug_break()
+    {
+        __try
+        {
+            DebugBreak();
+        }
+        __except (GetExceptionCode() == EXCEPTION_BREAKPOINT
+            ? EXCEPTION_EXECUTE_HANDLER
+            : EXCEPTION_CONTINUE_SEARCH)
+        {
+            // Normal flow when no debugger is attached.
+        }
+    }
 }
